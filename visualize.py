@@ -39,7 +39,7 @@ def visualize(model, layer_name, image, all_filters=False):
 def random_image(folder):
     files = os.listdir(folder + "/IMG/")
     index = randint(0, len(files))
-    return cv2.imread(folder + "/IMG/" + 'center_2017_03_28_22_08_07_995.jpg')
+    return cv2.imread(folder + "/IMG/" + files[index])
 
 
 model = load_model('model.h5')
