@@ -8,6 +8,7 @@ from keras.models import load_model
 from keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
+from matplotlib import pyplot as plt
 
 
 def add_random_shadow(image):
@@ -26,11 +27,17 @@ def add_random_shadow(image):
     Y_m = grid[1]
     shadow_mask[(X_m - top_y) * (bot_x - top_x) - (bot_y - top_y) * (Y_m - top_x) >= 0] = 1
 
-    add_brightness = .5
+    add_l = 1.5
     cond = shadow_mask == np.random.randint(2)
-    image_hls[:, :, 1][cond] = image_hls[:, :, 1][cond] * add_brightness
+    image_hls[:, :, 1][cond] *= add_l
 
     return cv2.cvtColor(image_hls, cv2.COLOR_HLS2RGB)
+
+
+def augment_brightness(image, add_l=1.5):
+    hls_image = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    hls_image[:, :, 1] *= np.random.rand() * (add_l - 1) + 1
+    return cv2.cvtColor(hls_image, cv2.COLOR_HLS2RGB)
 
 
 def generator(samples, batch_size=128):
@@ -64,6 +71,7 @@ def generator(samples, batch_size=128):
                         images.append(add_random_shadow(image))
                         measurements.append(steering + angle_correction)
                     else:
+                        augment_brightness(flipped)
                         images.append(flipped)
                         measurements.append(-(steering + angle_correction))
 
@@ -127,11 +135,12 @@ def cnn(load=False):
     return model
 
 data = []
-folders = ['samples/udacity',
+folders = [#'samples/udacity',
            'samples/bridge',
            'samples/turning',
            'samples/turning_2',
            'samples/second_track',
+           'samples/first_track',
            'samples/from_side']
 
 for folder in folders:
@@ -140,6 +149,10 @@ for folder in folders:
         for line in reader:
             # Filter out angles < 0.7
             data.append(line)
+
+value, counts = np.unique([float(i[3]) for i in data], return_counts=True)
+plt.plot(value, counts)
+plt.savefig('visualize/data.png')
 
 model = cnn()
 optimizer = Adam(lr=0.001)
