@@ -7,33 +7,36 @@ import matplotlib.pyplot as plt
 import numpy as np
 from keras.models import Model
 from keras.models import load_model
-from keras.utils.visualize_util import plot
+from augment import *
 
 
-def visualize(model, layer_name, image, all_filters=False):
+def visualize(model, layer_names, image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (200, 100))
-    # Show scheme
-    plot(model, to_file='visualize/scheme.png')
 
-    # Show layer
-    layer_out = Model(input=model.layers[0].input, output=model.get_layer(layer_name).output)
-    out = layer_out.predict(np.array([image]))
+    for layer_name in layer_names:
+        # Show layer
+        layer_out = Model(input=model.layers[0].input, output=model.get_layer(layer_name).output)
+        out = layer_out.predict(np.array([image]))
 
-    if all_filters:
-        plt.imshow(out[0, :, :, 0:3])
-        plt.axis('off')
-        plt.savefig("visualize/filter.png", pad_inches=0)
+        print(out.shape)
+        for i in range(out.shape[3]):
+            result = np.empty((out.shape[1], out.shape[2], 3))
+            result[:, :, 0] = out[0, :, :, i]
+            result[:, :, 1] = out[0, :, :, i]
+            result[:, :, 2] = out[0, :, :, i]
+            result += 0.5
+            cv2.imwrite("visualize/layer_{}_{}.png".format(layer_name, i), result * 255)
 
-    figure = plt.figure()
-    x = int(ceil(sqrt(out.shape[3])))
-    for i in range(out.shape[3]):
-        sp = figure.add_subplot(x, x, i + 1)
-        sp.axis('off')
-        sp.imshow(out[0, :, :, i], cmap='gray')
 
-    plt.axis('off')
-    plt.savefig('visualize/plot.png', pad_inches=0)
+def show_augmentation(image):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (200, 100))
+    translated_image, shift = random_shift(image)
+    cv2.imwrite("visualize/brightness.png", augment_lightness(image))
+    cv2.imwrite("visualize/shadow.png", add_random_shadow(image))
+    cv2.imwrite("visualize/translate.png", translated_image)
+    cv2.imwrite("visualize/flip.png", cv2.flip(image, 1))
 
 
 def random_image(folder):
@@ -43,4 +46,5 @@ def random_image(folder):
 
 
 model = load_model('model.h5')
-visualize(model, 'color_space', random_image('samples/from_side'))
+# visualize(model, ['visual_1', 'color_space'], random_image('samples/from_side'))
+show_augmentation(random_image('samples/from_side'))
