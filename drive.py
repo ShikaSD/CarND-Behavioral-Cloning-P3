@@ -45,7 +45,7 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 13
+set_speed = 20
 controller.set_desired(set_speed)
 
 
@@ -64,7 +64,6 @@ def telemetry(sid, data):
         image_array = np.asarray(image)
         image_array = cv2.resize(image_array, (200, 100))
         prediction = model.predict(image_array[None, :, :, :], batch_size=1)[0]
-        print(prediction)
         steering_angle = float(prediction[0])
 
         throttle = controller.update(float(speed))
