@@ -88,8 +88,7 @@ After the collection process, I had around 60.000 data points. However, in this 
 _Final dataset created for training (without augmentation)_
 
 I finally randomly shuffled the data set and put 30% of the data into a validation set. All the augmentations were applied "on the fly" in generator.
-
-I used this data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 5 as later the model started to overfit heavily.
+The model was trained only for 5 epochs, as later the training has shown no further improvement and was overfitting heavily.
 
 ### Network visualizations
 
@@ -157,3 +156,8 @@ I used this data for training the model. The validation set helped determine if 
 ![alt text][visual_1_21]
 ![alt text][visual_1_22]
 ![alt text][visual_1_23]
+
+### Possible further work
+* Work on generalization to create model which could run on first and second track.
+* Try different parameters with shift augmentation to better control turns.
+* Experiment with different tracks and input data to generalize data further and improve driving.
